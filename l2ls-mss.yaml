@@ -1,0 +1,220 @@
+---
+# -------------------------------------------------------------
+# Arista Data Center Topology
+# 2 Spines & 2 Leaf Pairs with MLAG
+# -------------------------------------------------------------
+
+#https://containerlab.dev/manual/topo-def-file/#name
+name: L2LS-mss
+
+#https://containerlab.dev/manual/topo-def-file/#prefix
+prefix: ""
+
+#https://containerlab.dev/manual/network/#configuring-management-network
+mgmt:
+  # This binds the management network to the ACT management network so ACT & CLAB Devices can communicate directly
+  bridge: tun0
+  network: mgmt
+  ipv4-subnet: 192.168.0.0/24
+  #driver-opts:
+  #  com.docker.network.bridge.gateway_mode_ipv4: routed
+
+#https://containerlab.dev/manual/topo-def-file/#topology
+topology:
+
+  defaults:
+    env:
+      INTFTYPE: et
+
+  kinds:
+    ceos:
+      # adjust to the name of the docker image you imported
+      # format:
+      #     image: <REPOSITORY>:<TAG>
+      # Check docker images with the following docker command:
+      #     docker images
+      image: ceos:4.32.2F-mss
+    linux:
+      image: mitchv85/ohv-host
+
+  nodes:
+
+#########################
+# External Connectivity #
+#########################
+    br-ztx-spine1:
+      kind: bridge
+    br-ztx-spine2:
+      kind: bridge
+    br-fw-spine1:
+      kind: bridge
+    br-fw-spine2:
+      kind: bridge
+
+#########################
+# SPINE                 #
+#########################
+
+#https://containerlab.dev/manual/topo-def-file/#nodes
+    SPINE1:
+      kind: ceos
+      mgmt-ipv4: 192.168.0.101
+      startup-config: configs/SPINE1.cfg
+      ports:
+        - '22001:22'
+        - '8001:80'
+        - '44301:443'
+      labels:
+        graph-level: 1
+        graph-icon: switch
+
+    SPINE2:
+      kind: ceos
+      mgmt-ipv4: 192.168.0.102
+      startup-config: configs/SPINE2.cfg
+      ports:
+        - '22002:22'
+        - '8002:80'
+        - '44302:443'
+      labels:
+        graph-level: 1
+        graph-icon: switch
+
+#########################
+# LEAF                  #
+#########################
+
+    LEAF1:
+      kind: ceos
+      mgmt-ipv4: 192.168.0.103
+      startup-config: configs/LEAF1.cfg
+      ports:
+        - '22003:22'
+        - '8003:80'
+        - '44303:443'
+      labels:
+        graph-level: 2
+        graph-icon: switch
+
+    LEAF2:
+      kind: ceos
+      mgmt-ipv4: 192.168.0.104
+      startup-config: configs/LEAF2.cfg
+      ports:
+        - '22004:22'
+        - '8004:80'
+        - '44304:443'
+      labels:
+        graph-level: 2
+        graph-icon: switch
+
+    LEAF3:
+      kind: ceos
+      mgmt-ipv4: 192.168.0.105
+      startup-config: configs/LEAF3.cfg
+      ports:
+        - '22005:22'
+        - '8005:80'
+        - '44305:443'
+      labels:
+        graph-level: 2
+        graph-icon: switch
+
+    LEAF4:
+      kind: ceos
+      mgmt-ipv4: 192.168.0.106
+      startup-config: configs/LEAF4.cfg
+      ports:
+        - '22006:22'
+        - '8006:80'
+        - '44306:443'
+      labels:
+        graph-level: 2
+        graph-icon: switch
+
+###########################################
+# HOST                                    #
+###########################################
+
+    HOSTA:
+      kind: linux
+      image: mitchv85/ohv-host
+      mgmt-ipv4: 192.168.0.107
+      ports:
+        - '22207:22'
+      exec:
+        - bash /usr/local/bin/hostnetconfig.sh -b -i 10.10.10.100/24 -g 10.10.10.1
+      labels:
+        graph-level: 3
+        graph-icon: host
+
+    HOSTB:
+      kind: linux
+      image: mitchv85/ohv-host
+      mgmt-ipv4: 192.168.0.108
+      ports:
+        - '22208:22'
+      exec:
+        - bash /usr/local/bin/hostnetconfig.sh -b -i 10.20.20.100/24 -g 10.20.20.1
+      labels:
+        graph-level: 3
+        graph-icon: host
+
+#https://containerlab.dev/manual/topo-def-file/#links
+  links:
+
+####################
+# SPINE1 to LEAF   #
+####################
+    - endpoints: ["SPINE1:et1", "LEAF1:et1"]
+    - endpoints: ["SPINE1:et2", "LEAF2:et1"]
+    - endpoints: ["SPINE1:et3", "LEAF3:et1"]
+    - endpoints: ["SPINE1:et4", "LEAF4:et1"]
+
+####################
+# SPINE2 to LEAF   #
+####################
+    - endpoints: ["SPINE2:et1", "LEAF1:et2"]
+    - endpoints: ["SPINE2:et2", "LEAF2:et2"]
+    - endpoints: ["SPINE2:et3", "LEAF3:et2"]
+    - endpoints: ["SPINE2:et4", "LEAF4:et2"]
+
+#####################
+# SPINE to External #
+#####################
+
+    # This is optional config if you want to create direct dataplane connectivity to ACT devices
+    - endpoints: ["SPINE1:et7", "br-ztx-spine1:eth0"]
+    - endpoints: ["SPINE1:et8", "br-fw-spine1:eth1"]
+    - endpoints: ["SPINE2:et7", "br-ztx-spine2:eth2"]
+    - endpoints: ["SPINE2:et8", "br-fw-spine2:eth3"]
+
+####################
+# SPINE1 to SPINE2 #
+####################
+    - endpoints: ["SPINE1:et5", "SPINE2:et5"]
+    - endpoints: ["SPINE1:et6", "SPINE2:et6"]
+
+####################
+# LEAF1 to LEAF2   #
+####################
+    - endpoints: ["LEAF1:et3", "LEAF2:et3"]
+    - endpoints: ["LEAF1:et4", "LEAF2:et4"]
+
+####################
+# LEAF3 to LEAF4   #
+####################
+    - endpoints: ["LEAF3:et3", "LEAF4:et3"]
+    - endpoints: ["LEAF3:et4", "LEAF4:et4"]
+
+####################
+# HOSTA            #
+####################
+    - endpoints: ["HOSTA:eth1", "LEAF1:et5"]
+    - endpoints: ["HOSTA:eth2", "LEAF2:et5"]
+
+####################
+# HOSTB            #
+####################
+    - endpoints: ["HOSTB:eth1", "LEAF3:et5"]
+    - endpoints: ["HOSTB:eth2", "LEAF4:et5"]
