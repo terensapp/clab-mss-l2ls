@@ -1,0 +1,52 @@
+# Usernames and passwords
+tools-server:
+  username: admin
+  password: arista123!
+  version: ubuntu-pro-2404-beefy-eft3
+cvp:
+  username: root
+  password: cvproot
+  version: 2025.2.1
+third-party:
+  version: byod
+  username: arista
+  password: arista123!
+cloudeos:
+  version: 4.33.2F
+  username: arista
+  password: arista123!
+
+# Nodes
+nodes:
+  - clab:
+      ip_addr: 192.168.0.1
+      instance_type: xlarge
+      internet_access: true
+      node_type: tools-server
+  - cvp:
+      ip_addr: 192.168.0.2
+      instance_type: large
+      node_type: cvp
+      auto_configuration: true
+  - fw:
+      ip_addr: 192.168.0.3
+      instance_type: xlarge
+      internet_access: true
+      node_type: third-party
+  - ztx:
+      ip_addr: 192.168.0.4
+      node_type: cloudeos
+  
+links:
+  - connection:
+    - clab:Ethernet1
+    - ztx:Ethernet1
+  - connection:
+    - clab:Ethernet2
+    - ztx:Ethernet2
+  - connection:
+    - clab:Ethernet3
+    - fw:Ethernet1
+  - connection:
+    - clab:Ethernet4
+    - fw:Ethernet2
