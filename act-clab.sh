@@ -34,3 +34,7 @@ sudo ip link add name br-fw-spine2 type bridge
 sudo ip link set br-fw-spine2 up
 sudo ip link set et4 up
 sudo ip link set et4 master br-fw-spine2
+sudo echo "0x4000" > /sys/class/net/br-ztx-spine1/bridge/group_fwd_mask
+sudo echo "0x4000" > /sys/class/net/br-ztx-spine2/bridge/group_fwd_mask
+sudo echo "0x4000" > /sys/class/net/br-fw-spine1/bridge/group_fwd_mask
+sudo echo "0x4000" > /sys/class/net/br-fw-spine2/bridge/group_fwd_mask
