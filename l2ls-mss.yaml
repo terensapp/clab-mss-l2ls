@@ -33,29 +33,16 @@ topology:
       #     image: <REPOSITORY>:<TAG>
       # Check docker images with the following docker command:
       #     docker images
-      image: ceos:4.32.2F-mss
+      image: ceos:mss-mirror
     linux:
-      image: mitchv85/ohv-host
+      image: ghcr.io/terensapp/clab-host:latest
 
   nodes:
-
-#########################
-# External Connectivity #
-#########################
-    br-ztx-spine1:
-      kind: bridge
-    br-ztx-spine2:
-      kind: bridge
-    br-fw-spine1:
-      kind: bridge
-    br-fw-spine2:
-      kind: bridge
 
 #########################
 # SPINE                 #
 #########################
 
-#https://containerlab.dev/manual/topo-def-file/#nodes
     SPINE1:
       kind: ceos
       mgmt-ipv4: 192.168.0.101
@@ -138,7 +125,7 @@ topology:
 
     HOSTA:
       kind: linux
-      image: mitchv85/ohv-host
+      image: ghcr.io/terensapp/clab-host:latest
       mgmt-ipv4: 192.168.0.107
       ports:
         - '22207:22'
@@ -150,7 +137,7 @@ topology:
 
     HOSTB:
       kind: linux
-      image: mitchv85/ohv-host
+      image: ghcr.io/terensapp/clab-host:latest
       mgmt-ipv4: 192.168.0.108
       ports:
         - '22208:22'
@@ -178,16 +165,6 @@ topology:
     - endpoints: ["SPINE2:et2", "LEAF2:et2"]
     - endpoints: ["SPINE2:et3", "LEAF3:et2"]
     - endpoints: ["SPINE2:et4", "LEAF4:et2"]
-
-#####################
-# SPINE to External #
-#####################
-
-    # This is optional config if you want to create direct dataplane connectivity to ACT devices
-    - endpoints: ["SPINE1:et7", "br-ztx-spine1:eth0"]
-    - endpoints: ["SPINE1:et8", "br-fw-spine1:eth1"]
-    - endpoints: ["SPINE2:et7", "br-ztx-spine2:eth2"]
-    - endpoints: ["SPINE2:et8", "br-fw-spine2:eth3"]
 
 ####################
 # SPINE1 to SPINE2 #
